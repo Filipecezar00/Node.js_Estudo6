@@ -10,25 +10,15 @@ const server = http.createServer(async (req, res) => {
 
   await json(req, res);
 
-  if (method === "GET" && url === "/users") {
-    const users = database.select("users");
-    return res
-      .setHeader("Content-type", "application/json")
-      .end(JSON.stringify(users));
-  }
-  if (method === "POST" && url === "/users") {
-    const { name, email } = req.body;
-    const user = {
-      id: randomUUID(),
-      name,
-      email,
-    };
+  const route = routes.find((route) => {
+    return route.method === method && route.path === url;
+  });
 
-    database.insert("users", user);
-    return res.writeHead(201).end();
+  if (route) {
+    return route.handler(req, res);
   }
 
-  return res.writeHead(404).end("Hello word");
+  return res.writeHead(404).end();
 });
 
 server.listen(3333);
